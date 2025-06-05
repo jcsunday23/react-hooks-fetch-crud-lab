@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 
-function QuestionForm(props) {
+function QuestionForm({ onAddQuestion }) {
   const [formData, setFormData] = useState({
     prompt: "",
     answer1: "",
     answer2: "",
     answer3: "",
     answer4: "",
-    correctIndex: 0,
+    correctIndex: "0",
   });
 
   function handleChange(event) {
@@ -19,36 +19,38 @@ function QuestionForm(props) {
 
   function handleSubmit(event) {
     event.preventDefault();
-    console.log(formData);
-    const { answer1, answer2, answer3, answer4, prompt, correctIndex } =
-      formData;
-    const answers = [answer1, answer2, answer3, answer4];
-    let answered = answers.every((str) => str !== "") && prompt !== "";
-
-    fetch("http://localhost:4000/questions/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prompt: prompt,
-        answers: answers,
-        correctIndex: parseInt(correctIndex),
-      }),
+    const questionData = {
+      prompt: formData.prompt,
+      answers: [
+        formData.answer1,
+        formData.answer2,
+        formData.answer3,
+        formData.answer4,
+      ],
+      correctIndex: parseInt(formData.correctIndex),
+    };
+    fetch("http://localhost:4000/questions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(questionData),
     })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Question added successfully:', data);
-        // Reset form after successful submission
-        setFormData({
-          prompt: "",
-          answer1: "",
-          answer2: "",
-          answer3: "",
-          answer4: "",
-          correctIndex: 0,
-        });
-      })
-      .catch(error => console.error('Error:', error));
+    .then((res) => res.json())
+    .then((newQuestion) => {
+      onAddQuestion(newQuestion);
+      // Reset form data after submission
+      setFormData({
+        prompt: "",
+        answer1: "",
+        answer2: "",
+        answer3: "",
+        answer4: "",
+        correctIndex: "0",
+      });
+    });
   }
+
 
   return (
     <section>
